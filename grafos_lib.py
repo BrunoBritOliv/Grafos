@@ -113,12 +113,12 @@ class Grafo:
         visitado = [False] * self.n
         componentes = []
 
-        def dfs_coletar(u, comp):
+        def dfs_coletar(u, componente):
             visitado[u] = True
             componente.append(u)
             for v in self.adj[u]:
                 if not visitado[v]:
-                    dfs_coletar(v, comp)
+                    dfs_coletar(v, componente)
 
         for v in range(self.n):
             if not visitado[v]:
@@ -137,3 +137,4 @@ class Grafo:
             for i, componente in enumerate(componentes):
                 f.write(f"Componente {i} — tamanho {len(componente)}\n")
                 f.write("Vértices: " + " ".join(map(str, componente)) + "\n\n")
+
