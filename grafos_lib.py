@@ -35,7 +35,7 @@ class Lista_Grafo:
     # Gera arquivo de saída com:
     #número de vértices, número de arestas, grau de cada vértice
 
-    def save_resumo(self, arquivo: str):
+    def salvar_resumo(self, arquivo: str):
         
         with open(arquivo, "w") as f:
             f.write(f"Vértices: {self.n}\n")
@@ -137,5 +137,6 @@ class Lista_Grafo:
             for i, componente in enumerate(componentes):
                 f.write(f"Componente {i} — tamanho {len(componente)}\n")
                 f.write("Vértices: " + " ".join(map(str, componente)) + "\n\n")
+
 
 
