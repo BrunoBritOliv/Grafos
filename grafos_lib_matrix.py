@@ -42,7 +42,7 @@ class Grafo_Matriz:
 
     def add_arestas(self, u: int, v: int):
     
-        if u < 1 or u > self.n or v < 1 or v > self.n:
+        if u < 0 or u > self.n or v < 0 or v > self.n:
             raise IndexError(f"Vértice(s) fora do intervalo [1, {self.n}]")
 
         if self.adj[u, v] == 0: 
@@ -58,7 +58,7 @@ class Grafo_Matriz:
             f.write(f"Vértices: {self.n}\n")
             f.write(f"Arestas: {self.num_arestas}\n")
             f.write("Graus:\n")
-            for v in range(1, self.n + 1):
+            for v in range( self.n + 1):
                 f.write(f"vértice {v}: grau {graus[v]}\n")
 
     
@@ -80,7 +80,7 @@ class Grafo_Matriz:
             vizinhos = np.where(self.adj[u] == 1)[0] 
             
             for v in vizinhos:
-                if v > 0 and not visitado[v]:
+                if v >= 0 and not visitado[v]:
                     visitado[v] = True
                     pai[v] = u
                     nivel[v] = nivel[u] + 1
@@ -95,7 +95,7 @@ class Grafo_Matriz:
 
         with open(arquivo, "w") as f:
             f.write(f"Árvore de Busca em Largura a partir do vértice {inicio}\n")
-            for v in range(1, self.n + 1): 
+            for v in range(self.n + 1): 
                 f.write(f"vértice {v}: pai = {pai[v]}, nível = {nivel[v]}\n")
 
 
@@ -118,7 +118,7 @@ class Grafo_Matriz:
                 proximo_vizinho = None
                 
                 for v in vizinhos:
-                    if v > 0 and v <= self.n and not visitado[v]:
+                    if v >= 0 and v <= self.n and not visitado[v]:
                         proximo_vizinho = v
                         break 
 
@@ -132,10 +132,10 @@ class Grafo_Matriz:
                 else:
                     stack.pop() 
 
-        if inicio > 0 and inicio <= self.n and not visitado[inicio]:
+        if inicio >= 0 and inicio <= self.n and not visitado[inicio]:
             dfs_iterativa(inicio)
 
-        for u in range(1, self.n + 1):
+        for u in range(self.n + 1):
             if not visitado[u]: 
                 dfs_iterativa(u) 
 
@@ -151,7 +151,7 @@ class Grafo_Matriz:
             f.write("Vértice | Pai | Nível (Profundidade)\n") 
             f.write("-" * 40 + "\n")
             
-            for v in range(1, self.n + 1):
+            for v in range(self.n + 1):
                 f.write(f"{v} | {pai[v]} | {nivel[v]}\n")
 
 
@@ -160,7 +160,7 @@ class Grafo_Matriz:
         visitado = np.zeros(self.n + 1, dtype=bool) 
         componentes = []
 
-        for v_inicial in range(1, self.n + 1):
+        for v_inicial in range(self.n + 1):
             
             if not visitado[v_inicial]:
                 
@@ -175,7 +175,7 @@ class Grafo_Matriz:
                     vizinhos = np.where(self.adj[u] == 1)[0]
                     
                     for v in vizinhos:
-                        if v > 0 and v <= self.n and not visitado[v]: 
+                        if v >= 0 and v <= self.n and not visitado[v]: 
                             visitado[v] = True
                             stack.append(v) 
                 

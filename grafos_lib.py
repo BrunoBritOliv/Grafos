@@ -1,14 +1,14 @@
 import sys
 import numpy as np
+from collections import deque # Import necessário para BFS
 
 class Lista_Grafo:
     def __init__(self, num_vertices: int):
         
         self.n = num_vertices
-        self.adj = {i: [] for i in range(num_vertices + 1)}
+        # CORREÇÃO 1: Inicializa corretamente para N vértices (0 a N-1)
+        self.adj = {i: [] for i in range(num_vertices)}
         self.num_arestas = 0
-
-    # Leitura do arquivo: Lembrar de definir o nome do arquivo
 
     @staticmethod
     def ler_de_arquivo(arquivo: str):
@@ -23,20 +23,26 @@ class Lista_Grafo:
             if linha.strip() == "":
                 continue
             u, v = map(int, linha.split())
-            grafo.add_arestas(u, v)
+            
+            # CORREÇÃO 2: Converte vértices de 1-based (arquivo) para 0-based (interno)
+            u_0 = u - 1
+            v_0 = v - 1
+            
+            # Validação simples
+            if u_0 < 0 or u_0 >= n or v_0 < 0 or v_0 >= n:
+                 print(f"Aviso: Vértice(s) ({u}, {v}) fora do intervalo [1, {n}] ignorado(s).")
+                 continue
+                 
+            grafo.add_arestas(u_0, v_0)
 
         return grafo
 
-    # Adiciona arestas não direcionadas
-
     def add_arestas(self, u: int, v: int):
     
-        self.adj[u].append(v)
-        self.adj[v].append(u)
-        self.num_arestas += 1
-
-    # Gera arquivo de saída com:
-    #número de vértices, número de arestas, grau de cada vértice
+        if v not in self.adj[u]: 
+            self.adj[u].append(v)
+            self.adj[v].append(u)
+            self.num_arestas += 1
 
     def salvar_resumo(self, arquivo: str):
         
@@ -45,14 +51,12 @@ class Lista_Grafo:
             f.write(f"Arestas: {self.num_arestas}\n")
             f.write("Graus:\n")
             for v in range(self.n):
-                f.write(f"vértice {v}: grau {len(self.adj[v])}\n")
-
-    # Busca em Largura
+                # Imprime o índice 1-based (v+1)
+                f.write(f"vértice {v+1}: grau {len(self.adj[v])}\n")
 
     def busca_largura(self, inicio: int):
        
-        from collections import deque
-
+        # deque já importado no topo
         visitado = [False] * self.n
         pai  = [-1] * self.n
         nivel   = [-1] * self.n
@@ -77,12 +81,13 @@ class Lista_Grafo:
         pai, nivel = self.busca_largura(inicio)
 
         with open(arquivo, "w") as f:
-            f.write(f"Árvore de Busca em Largura a partir do vértice {inicio}\n")
+            # Imprime o índice 1-based (inicio+1)
+            f.write(f"Árvore de Busca em Largura a partir do vértice {inicio+1}\n")
             for v in range(self.n):
-                f.write(f"vértice {v}: pai = {pai[v]}, nível = {nivel[v]}\n")
+                # Converte o pai de volta para 1-based, ou -1 se não houver
+                pai_1based = pai[v] + 1 if pai[v] != -1 else -1
+                f.write(f"vértice {v+1}: pai = {pai_1based}, nível = {nivel[v]}\n")
 
-   
-    # Busca em Profundidade
     
     def busca_profundidade(self, inicio: int):
         visitado = [False] * self.n
@@ -104,13 +109,14 @@ class Lista_Grafo:
         pai, nivel = self.busca_profundidade(inicio)
 
         with open(arquivo, "w") as f:
-            f.write(f"Árvore de busca em profundidade a partir do vértice {inicio}\n")
+            # Imprime o índice 1-based (inicio+1)
+            f.write(f"Árvore de busca em profundidade a partir do vértice {inicio+1}\n")
             for v in range(self.n):
-                f.write(f"vértice {v}: pai = {pai[v]}, nível = {nivel[v]}\n")
+                # Converte o pai de volta para 1-based, ou -1 se não houver
+                pai_1based = pai[v] + 1 if pai[v] != -1 else -1
+                f.write(f"vértice {v+1}: pai = {pai_1based}, nível = {nivel[v]}\n")
 
     
-    # Cmponentes conexos
-   
     def componentes_conexos(self):
         
         visitado = [False] * self.n
@@ -127,6 +133,8 @@ class Lista_Grafo:
             if not visitado[v]:
                 componente = []
                 dfs_coletar(v, componente)
+                
+                # CORREÇÃO 3: Adiciona o componente encontrado à lista de componentes
                 componentes.append(componente)
 
         return componentes
@@ -137,23 +145,21 @@ class Lista_Grafo:
         with open(arquivo, "w") as f:
             f.write(f"Número de componentes conexas: {len(componentes)}\n\n")
 
-            for i, componente in enumerate(componentes):
-                f.write(f"Componente {i} — tamanho {len(componente)}\n")
-                f.write("Vértices: " + " ".join(map(str, componente)) + "\n\n")
-
-
+            for i, componente_0based in enumerate(componentes):
+                # Converte os vértices para 1-based na saída
+                componente_1based = [v + 1 for v in componente_0based]
+                f.write(f"Componente {i+1} — tamanho {len(componente_1based)}\n")
+                f.write("Vértices: " + " ".join(map(str, componente_1based)) + "\n\n")
 
 
 if __name__ == "__main__":
     if len(sys.argv) != 2:
         print("Uso correto:")
-        print("python3 main.py arquivo_entrada.txt")
+        print("python3 grafos_lib.py arquivo_entrada.txt")
         sys.exit(1)
     
     texto_entrada = sys.argv[1]
-    grafo = Lista_Grafo.from_file(texto_entrada)
-    resumo_saida = "resumo_grafo.txt"
-    grafo.save_resumo(resumo_saida)
+    grafo = Lista_Grafo.ler_de_arquivo(texto_entrada) 
+    resumo_saida = "resumo_grafo_lista.txt"
+    grafo.salvar_resumo(resumo_saida) 
     print(f"Resumo do grafo salvo em '{resumo_saida}'")
-
-    
