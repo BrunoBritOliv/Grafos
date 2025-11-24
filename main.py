@@ -21,8 +21,8 @@ def main():
     if escolha == "1":
         print("\nLista de adjacência escolhida")
         grafo_l = Lista_Grafo.ler_de_arquivo(entrada)
-        print("Grafo carregado com sucesso!")
-        print("Qual função deseja chamar?")
+        print("Grafo carregado com sucesso!\n")
+        print("Qual função deseja chamar?\n")
         funcao = int(input("1 - Resumo do grafo \n"
                        "2 - Busca em Largura \n"
                        "3 - Busca em Profundidade \n"
