@@ -1,12 +1,14 @@
 import sys
 import numpy as np
-from collections import deque # Import necessário para BFS
+from collections import deque
+
+
+sys.setrecursionlimit(100000)
 
 class Lista_Grafo:
     def __init__(self, num_vertices: int):
         
         self.n = num_vertices
-        # CORREÇÃO 1: Inicializa corretamente para N vértices (0 a N-1)
         self.adj = {i: [] for i in range(num_vertices)}
         self.num_arestas = 0
 
@@ -24,11 +26,9 @@ class Lista_Grafo:
                 continue
             u, v = map(int, linha.split())
             
-            # CORREÇÃO 2: Converte vértices de 1-based (arquivo) para 0-based (interno)
             u_0 = u - 1
             v_0 = v - 1
             
-            # Validação simples
             if u_0 < 0 or u_0 >= n or v_0 < 0 or v_0 >= n:
                  print(f"Aviso: Vértice(s) ({u}, {v}) fora do intervalo [1, {n}] ignorado(s).")
                  continue
@@ -51,12 +51,10 @@ class Lista_Grafo:
             f.write(f"Arestas: {self.num_arestas}\n")
             f.write("Graus:\n")
             for v in range(self.n):
-                # Imprime o índice 1-based (v+1)
                 f.write(f"vértice {v+1}: grau {len(self.adj[v])}\n")
 
     def busca_largura(self, inicio: int):
        
-        # deque já importado no topo
         visitado = [False] * self.n
         pai  = [-1] * self.n
         nivel   = [-1] * self.n
@@ -81,10 +79,8 @@ class Lista_Grafo:
         pai, nivel = self.busca_largura(inicio)
 
         with open(arquivo, "w") as f:
-            # Imprime o índice 1-based (inicio+1)
             f.write(f"Árvore de Busca em Largura a partir do vértice {inicio+1}\n")
             for v in range(self.n):
-                # Converte o pai de volta para 1-based, ou -1 se não houver
                 pai_1based = pai[v] + 1 if pai[v] != -1 else -1
                 f.write(f"vértice {v+1}: pai = {pai_1based}, nível = {nivel[v]}\n")
 
@@ -109,10 +105,8 @@ class Lista_Grafo:
         pai, nivel = self.busca_profundidade(inicio)
 
         with open(arquivo, "w") as f:
-            # Imprime o índice 1-based (inicio+1)
             f.write(f"Árvore de busca em profundidade a partir do vértice {inicio+1}\n")
             for v in range(self.n):
-                # Converte o pai de volta para 1-based, ou -1 se não houver
                 pai_1based = pai[v] + 1 if pai[v] != -1 else -1
                 f.write(f"vértice {v+1}: pai = {pai_1based}, nível = {nivel[v]}\n")
 
@@ -134,7 +128,6 @@ class Lista_Grafo:
                 componente = []
                 dfs_coletar(v, componente)
                 
-                # CORREÇÃO 3: Adiciona o componente encontrado à lista de componentes
                 componentes.append(componente)
 
         return componentes

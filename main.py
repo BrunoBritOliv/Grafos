@@ -1,6 +1,8 @@
 from grafos_lib import Lista_Grafo
 from grafos_lib_matrix import Grafo_Matriz
 import sys
+import io
+import contextlib
 
 def main():
 
@@ -32,12 +34,12 @@ def main():
             saida = "resumo_grafo_lista.txt"
             grafo_l.salvar_resumo(saida)
         elif funcao == 2:
-            origem = int(input("Defina a origem da busca em largura"))
+            origem = int(input("Defina a origem da busca em largura: "))
             saida = "busca_largura_lista.txt"
             grafo_l.salvar_busca_largura(origem, saida)
         elif funcao == 3:
             saida = "busca_profundidade_lista.txt"
-            origem = int(input("Defina a origem da busca em profundidade"))
+            origem = int(input("Defina a origem da busca em profundidade: "))
             grafo_l.salvar_busca_profundidade(origem, saida)
         elif funcao == 4:
             saida = "componentes_conexos_lista.txt"
@@ -50,26 +52,37 @@ def main():
         print("\nMatriz de Adjacência escolhida")
         
         grafo = Grafo_Matriz.from_file(entrada)
-        
         print("Grafo carregado com sucesso!")
+        saida = "resumo_grafo_matriz.txt"
+        grafo.save_resumo(saida)
+        print(f"Resumo salvo em '{saida}'")
 
         print("Qual função deseja chamar?")
-        funcao = int(input("1 - Resumo do grafo \n"
+        funcao = int(input("1 - Representação do grafo \n"
                        "2 - Busca em Largura \n"
                        "3 - Busca em Profundidade \n"
-                       "4 - Componentes conexos"))
+                       "4 - Componentes conexos\n"))
 
         if funcao == 1:
-            saida = "resumo_grafo_matriz.txt"
-            grafo.save_resumo(saida)
-            print(f"Resumo salvo em '{saida}'")
+            saida = "representacao_grafo_matriz.txt"
+            # Captura a impressão da representação e salva em arquivo
+            buf = io.StringIO()
+            with contextlib.redirect_stdout(buf):
+                grafo.representacao_matriz_adjacencias()
+            conteudo = buf.getvalue()
+            try:
+                with open(saida, 'w') as f:
+                    f.write(conteudo)
+                print(f"Representação salva em '{saida}'")
+            except Exception as e:
+                print(f"Erro ao salvar representação em '{saida}': {e}")
         elif funcao == 2:
-            origem = int(input("Defina a origem da busca em largura").strip())
+            origem = int(input("Defina a origem da busca em largura: ").strip())
             saida = "busca_largura_matriz.txt"
             grafo.salvar_busca_largura(origem, saida)
             print(f"Busca em Largura salva em '{saida}'")
         elif funcao == 3:
-            origem = int(input("Defina a origem da busca em profundidade").strip())
+            origem = int(input("Defina a origem da busca em profundidade: ").strip())
             saida = "busca_profundidade_matriz.txt"
             grafo.salvar_busca_profundidade(origem, saida)
             print(f"Busca em Profundidade salva em '{saida}'")

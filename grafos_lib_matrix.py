@@ -13,30 +13,17 @@ class Grafo_Matriz:
     
     @staticmethod
     def from_file(arquivo: str):
-        
-        with open(arquivo, "r") as f:
-            linhas = f.read().strip().split("\n")
+        # Usa o método estático criar_matriz_adjacencias para ler arquivo de forma robusta.
+        matriz = Grafo_Matriz.criar_matriz_adjacencias(arquivo)
+        if matriz is None:
+            raise ValueError("Falha ao criar matriz de adjacências a partir do arquivo.")
 
-        try:
-            n = int(linhas[0].strip())
-        except IndexError:
-            raise ValueError("O arquivo está vazio ou não possui o número de vértices na primeira linha.")
-
-        grafo = Grafo_Matriz(n)
-
-        for linha in linhas[1:]:
-            if linha.strip() == "":
-                continue
-            
-            try:
-                u, v = map(int, linha.split())
-                grafo.add_arestas(u, v)
-            except ValueError:
-                print(f"Aviso: Linha inválida ignorada: {linha}")
-            except IndexError:
-                print(f"Erro: Aresta ({u}, {v}) inválida. Vértice(s) fora do intervalo [1, {n}].")
-
-
+        # Determina N a partir da forma da matriz (n+1 por conta do índice 0 não usado)
+        N = matriz.shape[0] - 1
+        grafo = Grafo_Matriz(N)
+        grafo.adj = matriz
+        # Conta arestas: cada aresta é contada duas vezes na matriz (i,j) e (j,i)
+        grafo.num_arestas = int(np.sum(matriz) // 2)
         return grafo
 
 
@@ -194,7 +181,112 @@ class Grafo_Matriz:
                     f.write(f"Componente {i+1} — tamanho {len(componente)}\n") 
                     
                     f.write("Vértices: " + " ".join(map(str, componente)) + "\n\n")
+    
 
+    @staticmethod
+    def criar_matriz_adjacencias(arquivo: str) -> np.ndarray:
+        """
+        Lê um arquivo de conexões de grafo e cria sua matriz de adjacências.
+
+        O arquivo deve ter:
+        - A primeira linha com a quantidade de vértices (N).
+        - As linhas seguintes com pares de vértices representando as arestas (v1 v2).
+
+        :param nome_arquivo: O caminho para o arquivo de entrada.
+        :return: Uma matriz de adjacências como um array NumPy (uint8).
+        """
+        try:
+            with open(arquivo, 'r') as f:
+                try:
+                    primeira_linha = f.readline().strip()
+                    if primeira_linha == "":
+                        print("Erro: Arquivo vazio.")
+                        return None
+
+                    if primeira_linha.isdigit():
+                        N = int(primeira_linha)
+                        print(f"Número de vértices (N) lido: {N}")
+                    else:
+                        f.seek(0)
+                        max_v = 0
+                        edges = []
+                        for linha_tmp in f:
+                            linha_tmp = linha_tmp.strip()
+                            if not linha_tmp or linha_tmp.startswith('#'):
+                                continue
+                            partes = linha_tmp.split()
+                            if len(partes) != 2:
+                                continue
+                            try:
+                                u_tmp = int(partes[0])
+                                v_tmp = int(partes[1])
+                                edges.append((u_tmp, v_tmp))
+                                if u_tmp > max_v:
+                                    max_v = u_tmp
+                                if v_tmp > max_v:
+                                    max_v = v_tmp
+                            except ValueError:
+                                continue
+                        if max_v == 0:
+                            print("Aviso: Não foi possível inferir N do arquivo; assumindo N=0.")
+                            return None
+                        N = max_v
+                        f.seek(0)
+                        print(f"Aviso: Primeira linha não continha N. Inferido N = {N} a partir das arestas.")
+
+                except ValueError:
+                    print("Erro: A primeira linha do arquivo deve ser um número inteiro (quantidade de vértices).")
+                    return None
+                
+                matriz_adj = np.zeros((N + 1, N + 1), dtype=np.uint8)
+                print(f"Matriz de adjacências {N}x{N} inicializada com tipo {matriz_adj.dtype}.")
+
+                num_arestas = 0
+                for linha in f:
+                    linha = linha.strip()
+                    if not linha or linha.startswith('#'):
+                        continue
+                    
+                    try:
+                        partes = linha.split()
+                        if len(partes) != 2:
+                            continue
+
+                        u = int(partes[0])
+                        v = int(partes[1])
+
+                        if 1 <= u <= N and 1 <= v <= N:
+                            matriz_adj[u, v] = 1
+                            matriz_adj[v, u] = 1
+                            num_arestas += 1
+                        else:
+                            print(f"⚠️ Aviso: Vértice fora do limite (1 a {N}): {u} ou {v}. Linha ignorada.")
+
+                    except ValueError:
+                        print(f"⚠️ Aviso: Linha inválida ignorada: '{linha}'")
+                
+                print(f"Processamento concluído. {num_arestas} arestas lidas.")
+                return matriz_adj
+
+        except FileNotFoundError:
+            print(f"Erro: O arquivo '{arquivo}' não foi encontrado.")
+            return None
+        except Exception as e:
+            print(f"Ocorreu um erro inesperado: {e}")
+            return None
+
+    def representacao_matriz_adjacencias(self) -> None:
+        """Imprime a representação da matriz de adjacências (1-based)."""
+        N = self.adj.shape[0] - 1
+        print("\n--- Matriz de Adjacências ---")
+        # Cabeçalhos 1..N
+        indices = [str(i) for i in range(1, N+1)]
+        print("Vértice | " + " ".join(indices))
+        print("\n" * (2))
+        for i in range(1, N+1):
+            linha_str = " ".join(map(str, self.adj[i, 1:N+1]))
+            print(f"    {i}   | {linha_str}")
+    
 
 if __name__ == "__main__":
     if len(sys.argv) != 2:
